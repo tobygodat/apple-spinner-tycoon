@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0a18" />
+    <meta name="description" content="An idle game about how many apples you can spin in your head." />
+    <title>How many apples can you spin in your head?</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 9c-3-2.4-9-1.6-9 5.6C7 21 11 27 13.6 27c1.2 0 1.6-.6 2.4-.6s1.2.6 2.4.6C21 27 25 21 25 14.6 25 7.4 19 6.6 16 9Z' fill='%23d4402c'/%3E%3Cpath d='M16 9c0-2.4 1-4.4 2.6-5.6' stroke='%236b4424' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3Cpath d='M17.4 6.2c2-2.4 5-2.6 6.6-1.6-1.4 2.2-4.4 2.8-6.6 1.6Z' fill='%237cc04a'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="lab">
+      <section class="mind-panel" aria-label="Your mind">
+        <header class="masthead">
+          <div class="masthead-text">
+            <h1>How many apples can you spin in your head?</h1>
+            <p class="subtitle">A standardized assessment of rotational imagination</p>
+          </div>
+          <button type="button" class="ghost-button" id="settings-open" aria-haspopup="dialog">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M5 3.5h7.5L15 6v10.5H5z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+              <path d="M7.5 9h5M7.5 12h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
+            <span>Subject file</span>
+          </button>
+        </header>
+
+        <div class="readouts">
+          <div class="readout readout-spins">
+            <p class="label">Spins</p>
+            <p class="spins-value" id="spins">0</p>
+            <p class="rates">
+              <span><span class="rate-value" id="sps">0</span> per second</span>
+              <span><span class="rate-value" id="per-focus">+1</span> per focus</span>
+            </p>
+          </div>
+          <div class="readout readout-iq">
+            <p class="label">Estimated IQ</p>
+            <p class="iq-value" id="iq">100</p>
+            <p class="rank" id="rank">Aphantasic</p>
+            <div class="rank-track" aria-hidden="true"><div class="rank-fill" id="rank-fill"></div></div>
+            <p class="rank-next" id="rank-next"></p>
+          </div>
+        </div>
+
+        <figure class="mind">
+          <button type="button" class="head" id="head" aria-label="Focus. Each press spins your imagined apples.">
+            <canvas id="head-canvas" aria-hidden="true"></canvas>
+          </button>
+          <div class="buff" id="buff" role="status" hidden>
+            <span class="buff-label">Frenzy <span class="buff-mult">×7</span></span>
+            <span class="buff-time" id="buff-time">30s</span>
+            <span class="buff-track" aria-hidden="true"><span class="buff-fill" id="buff-fill"></span></span>
+          </div>
+          <figcaption id="apple-count">Fig. 1. Subject, imagining nothing. Click the head to focus.</figcaption>
+        </figure>
+      </section>
+
+      <section class="store" aria-label="Store">
+        <div class="store-scroll">
+          <div class="store-head">
+            <h2>Apples</h2>
+            <div class="amounts" role="group" aria-label="Buy amount">
+              <button type="button" data-amount="1" aria-pressed="true">1</button>
+              <button type="button" data-amount="10" aria-pressed="false">10</button>
+              <button type="button" data-amount="100" aria-pressed="false">100</button>
+              <button type="button" data-amount="max" aria-pressed="false">Max</button>
+            </div>
+          </div>
+          <div class="tiers" id="tiers"></div>
+
+          <div class="store-head store-head-upgrades">
+            <h2>Enhancements</h2>
+            <span class="upgrade-count" id="upgrade-count"></span>
+          </div>
+          <div class="upgrades" id="upgrades"></div>
+          <p class="upgrades-empty" id="upgrades-empty">Own a few more apples and the lab will offer enhancements.</p>
+          <button type="button" class="ghost-button upgrades-more" id="upgrades-more" hidden>Show more</button>
+        </div>
+      </section>
+    </main>
+
+    <button type="button" class="golden" id="golden" aria-label="A golden apple drifts past. Catch it." hidden>
+      <canvas id="golden-canvas" aria-hidden="true"></canvas>
+    </button>
+
+    <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+    <dialog class="settings" id="settings" aria-labelledby="settings-title">
+      <form method="dialog" class="settings-body">
+        <header class="settings-head">
+          <h2 id="settings-title">Subject file</h2>
+          <button type="submit" class="icon-button" aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>
+          </button>
+        </header>
+        <dl class="stats">
+          <div><dt>Lifetime spins</dt><dd id="stat-lifetime">0</dd></div>
+          <div><dt>Times focused</dt><dd id="stat-clicks">0</dd></div>
+          <div><dt>Golden apples caught</dt><dd id="stat-golden">0</dd></div>
+          <div><dt>Apples imagined</dt><dd id="stat-apples">0</dd></div>
+          <div><dt>Enhancements</dt><dd id="stat-upgrades">0 of 0</dd></div>
+        </dl>
+        <p class="settings-note">Progress saves to this browser every 10 seconds and whenever you leave.</p>
+        <div class="reset">
+          <button type="button" class="ghost-button danger" id="reset-start">Clear mind…</button>
+          <div class="reset-confirm" id="reset-confirm" hidden>
+            <p>Forget every apple, enhancement and spin? This can't be undone.</p>
+            <div class="reset-actions">
+              <button type="button" class="ghost-button" id="reset-cancel">Keep my apples</button>
+              <button type="button" class="solid-button danger" id="reset-yes">Clear mind</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="debug" id="debug" hidden>
+      <button type="button" data-debug="spins6">+1M spins</button>
+      <button type="button" data-debug="spins15">+1e15 spins</button>
+      <button type="button" data-debug="grant">+25 of each</button>
+      <button type="button" data-debug="golden">Golden apple</button>
+      <button type="button" data-debug="away">Away 2h</button>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/format.js"></script>
+    <script src="js/economy.js"></script>
+    <script src="js/render.js"></script>
+    <script src="js/game.js"></script>
+  </body>
+</html>
