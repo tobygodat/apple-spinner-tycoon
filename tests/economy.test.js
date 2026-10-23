@@ -248,3 +248,16 @@ test('every upgrade refers to a real tier and a known effect', () => {
     assert.equal(E.UPGRADES.filter((u) => u.effect.kind === 'tierMultiplier' && u.effect.tier === tier.id).length, 5, tier.id);
   }
 });
+
+test('best value is the unlocked variety with the most output per spin for its next apple', () => {
+  const FUJI = tierIndex('fuji');
+  assert.equal(E.bestValueIndex(E.freshState(NOW)), -1, 'nothing is unlocked in a fresh game');
+  assert.equal(E.bestValueIndex(withOwned({}, { lifetimeSpins: 50 })), GRANNY, 'Granny Smith beats Red Delicious per spin');
+  const owned = { redDelicious: 64, grannySmith: 52, gala: 41, fuji: 30, honeycrisp: 21, pinkLady: 12, cosmicCrisp: 4 };
+  const unlocked = withOwned(owned, { lifetimeSpins: 318e6, clicks: 1200 });
+  const notYet = ['pinkLady.x5', 'cosmicCrisp.x1', 'iqmaxxing', 'fourthEye'];
+  const upgrades = E.UPGRADES.filter((u) => E.upgradeAvailable(unlocked, u) && !notYet.includes(u.id)).map((u) => u.id);
+  const midGame = { ...unlocked, upgrades };
+  assert.equal(E.bestValueIndex(midGame), FUJI, 'the mid-game save in the design picks Fuji');
+  assert.equal(E.bestValueIndex({ ...midGame, upgrades: upgrades.concat('pinkLady.x5') }), tierIndex('pinkLady'), 'doubling Pink Lady overtakes Fuji');
+});

@@ -3,97 +3,142 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b0a18" />
+    <meta name="theme-color" content="#08090A" />
     <meta name="description" content="An idle game about how many apples you can spin in your head." />
-    <title>How many apples can you spin in your head?</title>
+    <title>Apple Spinner</title>
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 9c-3-2.4-9-1.6-9 5.6C7 21 11 27 13.6 27c1.2 0 1.6-.6 2.4-.6s1.2.6 2.4.6C21 27 25 21 25 14.6 25 7.4 19 6.6 16 9Z' fill='%23d4402c'/%3E%3Cpath d='M16 9c0-2.4 1-4.4 2.6-5.6' stroke='%236b4424' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3Cpath d='M17.4 6.2c2-2.4 5-2.6 6.6-1.6-1.4 2.2-4.4 2.8-6.6 1.6Z' fill='%237cc04a'/%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' rx='5' fill='%23F7F8F8'/%3E%3Cpath transform='translate(4 4) scale(.75)' d='M8 4.6C6.6 3.5 3 3.8 3 7.6 3 11 5.2 13.6 6.6 13.6c.6 0 .8-.3 1.4-.3s.8.3 1.4.3c1.4 0 3.6-2.6 3.6-6C13 3.8 9.4 3.5 8 4.6Zm0 0c0-1.2.5-2.2 1.3-2.8' fill='none' stroke='%2308090A' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="lab">
-      <section class="mind-panel" aria-label="Your mind">
-        <header class="masthead">
-          <div class="masthead-text">
-            <h1>How many apples can you spin in your head?</h1>
-            <p class="subtitle">A standardized assessment of rotational imagination</p>
+    <header class="topbar">
+      <span class="logo" aria-hidden="true">
+        <svg width="12" height="12" viewBox="0 0 16 16">
+          <path
+            d="M8 4.6C6.6 3.5 3 3.8 3 7.6 3 11 5.2 13.6 6.6 13.6c.6 0 .8-.3 1.4-.3s.8.3 1.4.3c1.4 0 3.6-2.6 3.6-6C13 3.8 9.4 3.5 8 4.6Zm0 0c0-1.2.5-2.2 1.3-2.8"
+            fill="none"
+            stroke="#08090A"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </span>
+      <h1 class="brand">Apple Spinner</h1>
+      <span class="grow"></span>
+      <p class="topbar-rank"><span class="topbar-iq-label">IQ</span> <span class="topbar-iq" id="iq">100</span> <span class="topbar-rank-title" id="rank">Aphantasic</span></p>
+      <span class="topbar-divider" aria-hidden="true"></span>
+      <button type="button" class="bar-button" id="store-toggle" aria-controls="store" aria-expanded="false" aria-keyshortcuts="S">
+        Store <kbd>S</kbd>
+      </button>
+      <button type="button" class="bar-button" id="stats-open" aria-haspopup="dialog" aria-keyshortcuts="T">Stats <kbd>T</kbd></button>
+    </header>
+
+    <div class="layout">
+      <main class="stage">
+        <div class="readout">
+          <p class="spins" id="spins">0</p>
+          <p class="rates">
+            <span class="rate-label">spins</span>
+            <span class="rate-sep" aria-hidden="true"></span>
+            <span><span id="sps">0</span> per second</span>
+            <span class="rate-sep" aria-hidden="true"></span>
+            <span><span id="per-focus">1</span> per focus</span>
+          </p>
+        </div>
+
+        <div class="head" id="head">
+          <canvas id="head-canvas" aria-hidden="true"></canvas>
+        </div>
+
+        <div class="focus-area">
+          <button type="button" class="focus" id="focus" aria-keyshortcuts="Space">Focus <kbd>Space</kbd></button>
+          <p class="caption" id="apple-count"></p>
+        </div>
+
+        <div class="events" id="events" role="status" aria-live="polite">
+          <div class="event event-frenzy" id="buff" hidden>
+            <span class="event-dot" aria-hidden="true"></span>
+            <span class="event-title">Frenzy ×7</span>
+            <span class="event-detail" id="buff-time">30 s left</span>
           </div>
-          <button type="button" class="ghost-button" id="settings-open" aria-haspopup="dialog">
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <path d="M5 3.5h7.5L15 6v10.5H5z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
-              <path d="M7.5 9h5M7.5 12h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-            </svg>
-            <span>Subject file</span>
-          </button>
+        </div>
+      </main>
+
+      <aside class="store" id="store" aria-label="Store" hidden>
+        <header class="store-head">
+          <h2>Store</h2>
+          <span class="store-ready" id="store-ready"></span>
+          <span class="grow"></span>
+          <div class="amounts" role="group" aria-label="Buy amount">
+            <button type="button" data-amount="1" aria-pressed="true">1</button>
+            <button type="button" data-amount="10" aria-pressed="false">10</button>
+            <button type="button" data-amount="100" aria-pressed="false">100</button>
+            <button type="button" data-amount="max" aria-pressed="false">Max</button>
+          </div>
+          <button type="button" class="kbd-button" id="store-close" aria-label="Close store" aria-keyshortcuts="Escape"><kbd>Esc</kbd></button>
         </header>
 
-        <div class="readouts">
-          <div class="readout readout-spins">
-            <p class="label">Spins</p>
-            <p class="spins-value" id="spins">0</p>
-            <p class="rates">
-              <span><span class="rate-value" id="sps">0</span> per second</span>
-              <span><span class="rate-value" id="per-focus">+1</span> per focus</span>
-            </p>
-          </div>
-          <div class="readout readout-iq">
-            <p class="label">Estimated IQ</p>
-            <p class="iq-value" id="iq">100</p>
-            <p class="rank" id="rank">Aphantasic</p>
-            <div class="rank-track" aria-hidden="true"><div class="rank-fill" id="rank-fill"></div></div>
-            <p class="rank-next" id="rank-next"></p>
-          </div>
-        </div>
-
-        <figure class="mind">
-          <button type="button" class="head" id="head" aria-label="Focus. Each press spins your imagined apples.">
-            <canvas id="head-canvas" aria-hidden="true"></canvas>
-          </button>
-          <div class="buff" id="buff" role="status" hidden>
-            <span class="buff-label">Frenzy <span class="buff-mult">×7</span></span>
-            <span class="buff-time" id="buff-time">30s</span>
-            <span class="buff-track" aria-hidden="true"><span class="buff-fill" id="buff-fill"></span></span>
-          </div>
-          <figcaption id="apple-count">Fig. 1. Subject, imagining nothing. Click the head to focus.</figcaption>
-        </figure>
-      </section>
-
-      <section class="store" aria-label="Store">
         <div class="store-scroll">
-          <div class="store-head">
-            <h2>Apples</h2>
-            <div class="amounts" role="group" aria-label="Buy amount">
-              <button type="button" data-amount="1" aria-pressed="true">1</button>
-              <button type="button" data-amount="10" aria-pressed="false">10</button>
-              <button type="button" data-amount="100" aria-pressed="false">100</button>
-              <button type="button" data-amount="max" aria-pressed="false">Max</button>
+          <section class="summary" aria-label="Rank and rate">
+            <span class="summary-thumb" id="summary-thumb"></span>
+            <div class="summary-rank">
+              <p class="summary-title"><span id="summary-rank">Aphantasic</span> <span class="summary-iq" id="summary-iq">IQ 100</span></p>
+              <p class="summary-next" id="rank-next"></p>
+              <div class="summary-track" aria-hidden="true"><div class="summary-fill" id="rank-fill"></div></div>
             </div>
-          </div>
-          <div class="tiers" id="tiers"></div>
+            <div class="summary-rate">
+              <svg class="sparkline" width="124" height="28" viewBox="-2 0 124 28" aria-hidden="true">
+                <polyline id="spark-line" fill="none" stroke="#B4B7BD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                <circle id="spark-dot" r="2.5" fill="#F7F8F8" />
+              </svg>
+              <p><span class="summary-sps" id="summary-sps">0/s</span> <span class="summary-window">last 10 min</span></p>
+            </div>
+          </section>
 
-          <div class="store-head store-head-upgrades">
-            <h2>Enhancements</h2>
-            <span class="upgrade-count" id="upgrade-count"></span>
-          </div>
-          <div class="upgrades" id="upgrades"></div>
-          <p class="upgrades-empty" id="upgrades-empty">Own a few more apples and the lab will offer enhancements.</p>
-          <button type="button" class="ghost-button upgrades-more" id="upgrades-more" hidden>Show more</button>
+          <section class="section" aria-labelledby="upgrades-title">
+            <button type="button" class="section-head section-toggle" id="upgrades-toggle" aria-expanded="true" aria-controls="upgrades-body">
+              <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+                <path d="M4.5 3L7.5 6L4.5 9" fill="none" stroke="#8A8F98" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <span class="section-title" id="upgrades-title">Upgrades</span>
+              <span class="section-count" id="upgrade-count"></span>
+              <span class="grow"></span>
+              <span class="section-aside" id="upgrades-owned"></span>
+              <span class="section-ready" id="upgrades-ready"></span>
+            </button>
+            <div id="upgrades-body">
+              <div id="upgrades"></div>
+              <p class="upgrades-empty" id="upgrades-empty">Upgrades unlock as you buy apples.</p>
+              <button type="button" class="more" id="upgrades-more" hidden>Show more</button>
+            </div>
+          </section>
+
+          <section class="section" aria-labelledby="apples-title">
+            <div class="section-head section-head-cols">
+              <span class="section-title" id="apples-title">Apples</span>
+              <span class="section-count" id="tiers-count"></span>
+              <span class="grow"></span>
+              <span class="col col-owned">Owned</span>
+              <span class="col col-price">Price</span>
+              <span class="col col-slot" aria-hidden="true"></span>
+            </div>
+            <div id="tiers"></div>
+          </section>
         </div>
-      </section>
-    </main>
+      </aside>
+    </div>
 
-    <button type="button" class="golden" id="golden" aria-label="A golden apple drifts past. Catch it." hidden>
+    <button type="button" class="golden" id="golden" aria-label="Golden apple on screen." hidden>
       <canvas id="golden-canvas" aria-hidden="true"></canvas>
     </button>
 
-    <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
-
-    <dialog class="settings" id="settings" aria-labelledby="settings-title">
-      <form method="dialog" class="settings-body">
-        <header class="settings-head">
-          <h2 id="settings-title">Subject file</h2>
+    <dialog class="dialog" id="stats" aria-labelledby="stats-title">
+      <form method="dialog" class="dialog-body">
+        <header class="dialog-head">
+          <h2 id="stats-title">Stats</h2>
           <button type="submit" class="icon-button" aria-label="Close">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>
           </button>
@@ -102,19 +147,23 @@
           <div><dt>Lifetime spins</dt><dd id="stat-lifetime">0</dd></div>
           <div><dt>Times focused</dt><dd id="stat-clicks">0</dd></div>
           <div><dt>Golden apples caught</dt><dd id="stat-golden">0</dd></div>
-          <div><dt>Apples imagined</dt><dd id="stat-apples">0</dd></div>
-          <div><dt>Enhancements</dt><dd id="stat-upgrades">0 of 0</dd></div>
+          <div><dt>Apples</dt><dd id="stat-apples">0</dd></div>
+          <div><dt>Upgrades</dt><dd id="stat-upgrades">0 of 0</dd></div>
         </dl>
-        <p class="settings-note">Progress saves to this browser every 10 seconds and whenever you leave.</p>
-        <div class="reset">
-          <button type="button" class="ghost-button danger" id="reset-start">Clear mind…</button>
-          <div class="reset-confirm" id="reset-confirm" hidden>
-            <p>Forget every apple, enhancement and spin? This can't be undone.</p>
-            <div class="reset-actions">
-              <button type="button" class="ghost-button" id="reset-cancel">Keep my apples</button>
-              <button type="button" class="solid-button danger" id="reset-yes">Clear mind</button>
-            </div>
-          </div>
+        <footer class="dialog-foot">
+          <p class="saved" id="saved"></p>
+          <button type="button" class="button button-quiet" id="reset-start">Reset progress…</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog class="dialog dialog-small" id="reset" aria-labelledby="reset-title" aria-describedby="reset-body">
+      <form method="dialog" class="dialog-body">
+        <h2 id="reset-title">Reset progress</h2>
+        <p id="reset-body">Deletes all apples, upgrades, and spins. You can't undo this.</p>
+        <div class="dialog-actions">
+          <button type="submit" class="button" value="cancel" id="reset-cancel">Cancel</button>
+          <button type="button" class="button button-danger" id="reset-yes">Reset</button>
         </div>
       </form>
     </dialog>
@@ -130,6 +179,7 @@
     <script src="js/data.js"></script>
     <script src="js/format.js"></script>
     <script src="js/economy.js"></script>
+    <script src="js/art.js"></script>
     <script src="js/render.js"></script>
     <script src="js/game.js"></script>
   </body>
