@@ -127,6 +127,13 @@
     return { ...state, spins: state.spins - cost, owned: { ...state.owned, [tier.id]: owned + qty } };
   }
 
+  function quoteTier(state, index, amount) {
+    const tier = TIERS[index];
+    const owned = state.owned[tier.id];
+    const qty = amount === 'max' ? Math.max(1, maxAffordable(tier, owned, state.spins)) : amount;
+    return { qty, cost: costOf(tier, owned, qty) };
+  }
+
   function tierUnlocked(state, index) {
     const tier = TIERS[index];
     return state.owned[tier.id] > 0 || state.lifetimeSpins >= tier.baseCost / 2;
@@ -267,6 +274,7 @@
     buyUpgrade,
     tierUnlocked,
     bestValueIndex,
+    quoteTier,
     upgradeAvailable,
     iq,
     iqExact,

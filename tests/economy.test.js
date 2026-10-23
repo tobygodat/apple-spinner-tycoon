@@ -51,6 +51,24 @@ test('an unaffordable buy leaves the state unchanged', () => {
   assert.equal(E.buyTier(state, RED, 1), state);
 });
 
+test('a store row quotes the apples and price a click buys at each buy amount', () => {
+  const state = withOwned({ redDelicious: 1 }, { spins: 60 });
+  assert.deepEqual(E.quoteTier(state, RED, 1), { qty: 1, cost: 18 });
+  assert.deepEqual(E.quoteTier(state, RED, 10), { qty: 10, cost: E.costOf(E.TIERS[RED], 1, 10) });
+  assert.deepEqual(E.quoteTier(state, RED, 'max'), { qty: 2, cost: 18 + 20 }, 'Max buys as many as the wallet covers');
+  const quote = E.quoteTier(state, RED, 'max');
+  const bought = E.buyTier(state, RED, quote.qty);
+  assert.equal(bought.spins, state.spins - quote.cost, 'the click spends exactly the quoted price');
+  assert.equal(bought.owned.redDelicious, 1 + quote.qty);
+});
+
+test('at Max with nothing affordable, a row quotes one apple and a click buys nothing', () => {
+  const state = withOwned({}, { spins: 10 });
+  const quote = E.quoteTier(state, RED, 'max');
+  assert.deepEqual(quote, { qty: 1, cost: 15 });
+  assert.equal(E.buyTier(state, RED, quote.qty), state);
+});
+
 test('production sums owned apples times their base rate', () => {
   near(E.spinsPerSecond(withOwned({ redDelicious: 10, grannySmith: 2 })), 3);
   near(E.spinsPerSecond(E.freshState(NOW)), 0);
