@@ -12,6 +12,10 @@ To serve it on a local network instead, run any static file server from this fol
 python3 -m http.server 8101
 ```
 
+## Deploy
+
+Run `npx wrangler deploy` from this folder to publish the game to https://apple-spinner-tycoon.tobygodat.workers.dev as a Cloudflare Worker with static assets. `.assetsignore` keeps `tests/`, this README, and the config out of the upload.
+
 ## How it plays
 
 - **Focus.** Each press of the Focus button, each click on the head, and each Space earns spins. Holding a key down counts once.
