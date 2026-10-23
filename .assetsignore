@@ -3,6 +3,7 @@
 .wrangler
 node_modules
 tests
+tools
 README.md
 wrangler.jsonc
 .DS_Store

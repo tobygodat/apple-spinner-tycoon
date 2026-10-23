@@ -5,11 +5,11 @@
   const COST_GROWTH = 1.15;
   const OFFLINE_CAP_SECONDS = 8 * 60 * 60;
   const GOLDEN = {
-    minDelayMs: 60000,
-    maxDelayMs: 180000,
+    minDelayMs: 120000,
+    maxDelayMs: 300000,
     visibleMs: 12000,
     frenzyMultiplier: 7,
-    frenzyMs: 30000,
+    frenzyMs: 45000,
   };
 
   const { TIERS, UPGRADES, RANKS } =

@@ -338,7 +338,7 @@
       flavor: 'Certified by a quiz you found online. The certificate also rotates.',
       cost: 25000,
       unlock: { kind: 'lifetimeSpins', amount: 5000 },
-      effect: { kind: 'globalMultiplier', factor: 1.25 },
+      effect: { kind: 'globalMultiplier', factor: 1.1 },
     },
     {
       id: 'aphantasiaCure',
@@ -346,7 +346,7 @@
       flavor: 'A sugar pill shaped like an apple. Somehow it works.',
       cost: 2.5e6,
       unlock: { kind: 'lifetimeSpins', amount: 5e5 },
-      effect: { kind: 'globalMultiplier', factor: 1.25 },
+      effect: { kind: 'globalMultiplier', factor: 1.1 },
     },
     {
       id: 'iqmaxxing',
@@ -354,7 +354,7 @@
       flavor: 'You posted your apple count. The comments agree it is very high.',
       cost: 2.5e8,
       unlock: { kind: 'lifetimeSpins', amount: 5e7 },
-      effect: { kind: 'globalMultiplier', factor: 1.5 },
+      effect: { kind: 'globalMultiplier', factor: 1.25 },
     },
     {
       id: 'philosophyIsWhen',
@@ -362,7 +362,7 @@
       flavor: 'You have read no philosophy. You have imagined a great many apples.',
       cost: 2.5e10,
       unlock: { kind: 'lifetimeSpins', amount: 5e9 },
-      effect: { kind: 'globalMultiplier', factor: 1.5 },
+      effect: { kind: 'globalMultiplier', factor: 1.25 },
     },
     {
       id: 'peerReview',
@@ -370,7 +370,7 @@
       flavor: 'You reviewed your own results and found them to be genius.',
       cost: 2.5e12,
       unlock: { kind: 'lifetimeSpins', amount: 5e11 },
-      effect: { kind: 'globalMultiplier', factor: 2 },
+      effect: { kind: 'globalMultiplier', factor: 1.5 },
     },
     {
       id: 'theoryOfForms',
@@ -378,7 +378,7 @@
       flavor: 'Plato would be proud. Plato is not answering your emails.',
       cost: 2.5e14,
       unlock: { kind: 'lifetimeSpins', amount: 5e13 },
-      effect: { kind: 'globalMultiplier', factor: 2 },
+      effect: { kind: 'globalMultiplier', factor: 1.5 },
     },
     {
       id: 'closeYourEyesHarder',
