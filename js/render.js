@@ -164,6 +164,11 @@
     return out;
   }
 
+  function offPurple(h) {
+    const t = fract(h);
+    return 0.02 + (t < 0.5 ? t * 2 : 2 - t * 2) * 0.55;
+  }
+
   function norm3(x, y, z) {
     const l = Math.hypot(x, y, z);
     return { x: x / l, y: y / l, z: z / l };
@@ -493,7 +498,7 @@
     holo(p, m, out) {
       sampleTex(m.tex, p.lam, p.lat, T);
       const hue = fract((p.lam / TAU) * 2 + (p.lat / Math.PI) * 0.7 + (1 - p.nz) * 0.85 + T[2] * 0.35);
-      hsvInto(C, hue, 0.72, 1);
+      hsvInto(C, offPurple(hue), 0.72, 1);
       const ndl = p.nx * L.x + p.ny * L.y + p.nz * L.z;
       const k = (0.45 + 0.6 * Math.max(0, (ndl + 0.3) / 1.3)) * (1 - 0.5 * p.cav);
       const ndh = Math.max(0, p.nx * H.x + p.ny * H.y + p.nz * H.z);
@@ -529,7 +534,7 @@
       const edge = 1 - smoothstep(0.003, 0.02, best - second);
       const e = studio(2 * f.z * f.x, 2 * f.z * f.y, 2 * f.z * f.z - 1, 0);
       const ndl = Math.max(0, f.x * L.x + f.y * L.y + f.z * L.z);
-      hsvInto(C, fract(q.hue + p.theta / TAU), 0.55, 1);
+      hsvInto(C, offPurple(q.hue + p.theta / TAU), 0.55, 1);
       const fringe = 0.3 * (1 - f.z);
       const facet = 0.75 + 0.5 * q.hue;
       for (let i = 0; i < 3; i++) out[i] = (m.tint[i] * (0.22 + 0.4 * ndl) + e * 0.55) * facet + C[i] * fringe + edge * 0.3;
@@ -565,7 +570,7 @@
       const ndl = p.nx * L.x + p.ny * L.y + p.nz * L.z;
       const diff = Math.max(0, (ndl + 0.6) / 1.6);
       const ndh = Math.max(0, p.nx * H.x + p.ny * H.y + p.nz * H.z);
-      hsvInto(C, fract(0.58 + (1 - p.nz) * 0.7 + p.lat * 0.08 + p.lam / TAU), 0.28, 1);
+      hsvInto(C, offPurple(0.58 + (1 - p.nz) * 0.7 + p.lat * 0.08 + p.lam / TAU), 0.28, 1);
       const edge = (1 - p.nz) * (1 - p.nz) * 0.6;
       const quarter = p.lam / (Math.PI / 2);
       const meridian = Math.abs(quarter - Math.round(quarter)) * (Math.PI / 2) * Math.cos(p.lat);
@@ -658,7 +663,7 @@
       ctx.beginPath();
       ctx.moveTo(cx, baseY + unit * 0.06);
       ctx.quadraticCurveTo(cx + lean * 0.2 + unit * 0.04, baseY - unit * 0.25, tipX, tipY);
-      if (silhouette) ctx.strokeStyle = '#2c284e';
+      if (silhouette) ctx.strokeStyle = '#3A3B40';
       else {
         const stem = ctx.createLinearGradient(cx - unit * 0.06, 0, cx + unit * 0.06, 0);
         stem.addColorStop(0, look.stem[0]);
@@ -686,7 +691,7 @@
       ctx.moveTo(bx, by);
       ctx.quadraticCurveTo(mx + px, my + py, tx, ty);
       ctx.quadraticCurveTo(mx - px, my - py, bx, by);
-      if (silhouette) ctx.fillStyle = '#2c284e';
+      if (silhouette) ctx.fillStyle = '#3A3B40';
       else {
         const leaf = ctx.createLinearGradient(mx + px, my + py, mx - px, my - py);
         leaf.addColorStop(0, leafInFront ? look.leaf[0] : look.leaf[1]);
@@ -807,7 +812,7 @@
       ctx.clearRect(0, 0, S, S);
       renderApple(ctx, 0, 0, S, index, tiers[index].look, angle === undefined ? 0.55 : angle, locked);
       if (!locked) return;
-      ctx.fillStyle = 'rgba(200, 192, 255, 0.55)';
+      ctx.fillStyle = '#62666D';
       ctx.font = `700 ${Math.round(S * 0.26)}px ui-sans-serif, system-ui, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -899,24 +904,31 @@
   }
 
   const HEAD_PATH =
-    'M 30 112 C 30 104 29.5 98 28.5 92 C 27.5 86 24 80 20.5 75 C 14 66 10.5 56 10.5 45 ' +
-    'C 10.5 22 28 6 50 6 C 68 6 81 17 83.5 33 C 84.3 38 84 41 83.6 43.5 C 85 47 87.5 52 89.5 56.5 ' +
-    'C 90.5 58.8 89.6 60.4 87.4 60.8 L 85.6 61.1 C 86.2 63.2 86 64.4 85.4 65.3 C 86.2 66.4 86.1 67.6 85.2 68.6 ' +
-    'C 85.9 70.4 85.6 72.6 84.4 74.4 C 82.8 76.8 79.6 78.2 75.6 78.2 C 73 78.2 70.5 79.6 69.4 82.4 ' +
-    'C 68.2 85.4 67.8 88 67.6 91 C 67.4 96 67.6 103 68 112 Z';
-  const EYE_PATH = 'M 71.5 45.6 Q 75 48.4 78.6 45.4 M 72.6 46.9 L 72 48.4 M 74.8 47.6 L 74.6 49.2 M 77 47.1 L 77.4 48.6';
-  const BROW_PATH = 'M 70.5 40.6 Q 75 38.6 80 40.2';
-  const HEAD_BOX = { x: 8, y: 4, w: 84, h: 106 };
-  const MIND = { cx: 47, cy: 37, rx: 33, ry: 27 };
+    'M84 352C84 318 80 296 70 276C46 236 38 188 50 140C66 74 122 30 190 30C258 30 304 76 310 140C312 158 308 168 312 180' +
+    'C316 192 334 214 336 224C337 231 328 233 320 235C322 243 324 250 319 256C323 262 321 270 314 274C310 290 296 296 274 296' +
+    'C256 296 250 312 250 352';
+  const HEAD_BOX = { x: 20, y: 10, w: 340, h: 350 };
+  const MIND = { cx: 190, cy: 155, rx: 108, ry: 92 };
+  const ORBITS = [
+    { rx: 128, ry: 34, tilt: -14, dash: [] },
+    { rx: 96, ry: 22, tilt: 18, dash: [2, 4] },
+  ];
+  const LINE = '#2A2B2F';
+  // Five depth planes, front to back: apple size and how much of its color survives the mix into the ground.
+  const DEPTHS = [
+    { size: 1.36, tone: 0.95 },
+    { size: 1.14, tone: 0.86 },
+    { size: 0.96, tone: 0.72 },
+    { size: 0.82, tone: 0.58 },
+    { size: 0.72, tone: 0.46 },
+  ];
 
   function createStage(canvas, tiers) {
     const ctx = canvas.getContext('2d');
     const bank = createSpriteBank(tiers);
-    const headPath = new Path2D(HEAD_PATH);
-    const eyePath = new Path2D(EYE_PATH);
-    const browPath = new Path2D(BROW_PATH);
+    const headOutline = new Path2D(HEAD_PATH);
+    const headPath = new Path2D(HEAD_PATH + 'Z');
     const headLayer = document.createElement('canvas');
-    const outlineLayer = document.createElement('canvas');
 
     let W = 0;
     let H = 0;
@@ -945,76 +957,34 @@
       H = Math.max(1, Math.round(cssH * dpr));
       canvas.width = W;
       canvas.height = H;
-      scale = Math.min(W / HEAD_BOX.w, (H * 1.02) / HEAD_BOX.h);
+      scale = Math.min(W / HEAD_BOX.w, H / HEAD_BOX.h);
       ox = (W - HEAD_BOX.w * scale) / 2 - HEAD_BOX.x * scale;
-      oy = H * 0.02 - HEAD_BOX.y * scale;
+      oy = (H - HEAD_BOX.h * scale) / 2 - HEAD_BOX.y * scale;
       mind = { cx: ox + MIND.cx * scale, cy: oy + MIND.cy * scale, rx: MIND.rx * scale, ry: MIND.ry * scale };
-      cap = Math.max(20, Math.min(64, Math.floor((Math.PI * mind.rx * mind.ry) / (26 * dpr) ** 2)));
+      cap = Math.max(20, Math.min(64, Math.floor((Math.PI * mind.rx * mind.ry) / (30 * dpr) ** 2)));
       paintLayers();
       layout(performance.now() / 1000, true);
     }
 
     function paintLayers() {
-      for (const layer of [headLayer, outlineLayer]) {
-        layer.width = W;
-        layer.height = H;
-      }
+      headLayer.width = W;
+      headLayer.height = H;
       const h = headLayer.getContext('2d');
       h.setTransform(scale, 0, 0, scale, ox, oy);
-      const fill = h.createRadialGradient(MIND.cx, MIND.cy, 2, MIND.cx, MIND.cy + 8, 70);
-      fill.addColorStop(0, '#221a4d');
-      fill.addColorStop(0.45, '#151132');
-      fill.addColorStop(1, '#0b0a18');
-      h.fillStyle = fill;
+      h.fillStyle = '#08090A';
       h.fill(headPath);
-      h.save();
-      h.clip(headPath);
-      h.lineWidth = 0.18;
-      for (let k = 1; k <= 6; k++) {
-        h.strokeStyle = `rgba(170,160,255,${0.075 - k * 0.007})`;
+      h.strokeStyle = LINE;
+      h.lineJoin = 'round';
+      h.lineWidth = 1.5;
+      h.stroke(headOutline);
+      h.lineWidth = 1;
+      for (const orbit of ORBITS) {
+        h.setLineDash(orbit.dash);
         h.beginPath();
-        h.ellipse(MIND.cx, MIND.cy, MIND.rx * k * 0.2, MIND.ry * k * 0.2, 0, 0, TAU);
+        h.ellipse(190, 150, orbit.rx, orbit.ry, (orbit.tilt * Math.PI) / 180, 0, TAU);
         h.stroke();
       }
-      h.strokeStyle = 'rgba(170,160,255,0.08)';
-      for (let k = 0; k < 48; k++) {
-        const a = (k / 48) * TAU;
-        const r1 = k % 4 ? 0.97 : 0.92;
-        h.beginPath();
-        h.moveTo(MIND.cx + Math.cos(a) * MIND.rx * r1 * 1.2, MIND.cy + Math.sin(a) * MIND.ry * r1 * 1.2);
-        h.lineTo(MIND.cx + Math.cos(a) * MIND.rx * 1.2, MIND.cy + Math.sin(a) * MIND.ry * 1.2);
-        h.stroke();
-      }
-      h.restore();
-      fadeNeck(h);
-
-      const o = outlineLayer.getContext('2d');
-      o.setTransform(scale, 0, 0, scale, ox, oy);
-      o.lineJoin = 'round';
-      o.lineCap = 'round';
-      o.strokeStyle = 'rgba(150,140,255,0.16)';
-      o.lineWidth = 1.6;
-      o.stroke(headPath);
-      o.strokeStyle = 'rgba(214,208,255,0.78)';
-      o.lineWidth = 0.45;
-      o.stroke(headPath);
-      o.strokeStyle = 'rgba(214,208,255,0.55)';
-      o.lineWidth = 0.4;
-      o.stroke(eyePath);
-      o.stroke(browPath);
-      fadeNeck(o);
-    }
-
-    function fadeNeck(layerCtx) {
-      layerCtx.setTransform(1, 0, 0, 1, 0, 0);
-      layerCtx.globalCompositeOperation = 'destination-out';
-      const top = oy + 84 * scale;
-      const grad = layerCtx.createLinearGradient(0, top, 0, Math.min(H, oy + 108 * scale));
-      grad.addColorStop(0, 'rgba(0,0,0,0)');
-      grad.addColorStop(1, 'rgba(0,0,0,1)');
-      layerCtx.fillStyle = grad;
-      layerCtx.fillRect(0, top, W, H - top);
-      layerCtx.globalCompositeOperation = 'source-over';
+      h.setLineDash([]);
     }
 
     function setCounts(next) {
@@ -1027,7 +997,7 @@
       const wanted = [];
       for (let i = alloc.length - 1; i >= 0; i--) for (let k = 0; k < alloc[i]; k++) wanted.push(i + ':' + k);
       const n = wanted.length;
-      appleD = n === 0 ? 0 : n === 1 ? Math.min(mind.rx, mind.ry) * 1.05 : Math.min(Math.min(mind.rx, mind.ry) * 0.86, Math.sqrt((Math.PI * mind.rx * mind.ry) / n) * 0.84);
+      appleD = n === 0 ? 0 : n === 1 ? Math.min(mind.rx, mind.ry) * 1.05 : Math.min(Math.min(mind.rx, mind.ry) * 0.86, Math.sqrt((Math.PI * mind.rx * mind.ry) / n) * 0.6);
 
       const nextByKey = new Map();
       const nextApples = [];
@@ -1044,11 +1014,17 @@
           r = slot === 0 ? 0 : 0.56;
           a = slot === 0 ? 0 : -Math.PI / 2 + ((slot - 1) / (n - 1)) * TAU;
         } else {
-          r = Math.sqrt(slot / (n - 1)) * 0.97;
+          r = Math.sqrt(slot / (n - 1)) * 0.92;
           a = slot * GOLDEN_ANGLE;
         }
-        const tx = Math.cos(a) * r;
-        const ty = Math.sin(a) * r;
+        const jitter = n > 7 ? Math.sqrt(Math.PI / n) * 0.42 : 0;
+        let tx = Math.cos(a) * r + (hash(slot * 3.7 + 0.5) - 0.5) * jitter;
+        let ty = Math.sin(a) * r + (hash(slot * 5.3 + 0.9) - 0.5) * jitter;
+        const reachOut = Math.hypot(tx, ty);
+        if (reachOut > 0.97) {
+          tx *= 0.97 / reachOut;
+          ty *= 0.97 / reachOut;
+        }
         let apple = byKey.get(key);
         if (!apple) {
           const tier = Number(key.split(':')[0]);
@@ -1060,6 +1036,8 @@
             x: tx,
             y: ty,
             angle: seed * TAU,
+            depth: DEPTHS[Math.floor(hash(seed * 7.1 + 0.3) * DEPTHS.length)],
+            tilt: (hash(seed * 5.7 + 0.2) - 0.5) * 0.9,
             speed: tier === tiers.length - 1 ? 0.22 : 0.26 + 0.18 * hash(seed * 31),
             born: snap ? -10 : now,
             dying: 0,
@@ -1084,7 +1062,7 @@
       apples = nextApples;
       byKey = nextByKey;
 
-      const needed = Math.min(320, Math.max(48, Math.ceil((appleD * 1.12) / (2 * BODY) / 16) * 16));
+      const needed = Math.min(320, Math.max(48, Math.ceil((appleD * DEPTHS[0].size) / (2 * BODY) / 16) * 16));
       if (needed > spriteS || needed < spriteS * 0.6) {
         spriteS = needed;
         bank.retain((s) => s.S === spriteS || s.golden);
@@ -1128,13 +1106,13 @@
       if (frenzy) {
         const pulse = 0.14 + 0.06 * Math.sin(now * 5);
         const g = ctx.createRadialGradient(mind.cx, mind.cy, 0, mind.cx, mind.cy, mind.rx * 1.4);
-        g.addColorStop(0, `rgba(255,190,80,${pulse})`);
-        g.addColorStop(1, 'rgba(255,120,40,0)');
+        g.addColorStop(0, `rgba(201,165,84,${pulse})`);
+        g.addColorStop(1, 'rgba(201,165,84,0)');
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, W, H);
       }
       if (flash > 0.005) {
-        ctx.fillStyle = `rgba(200,190,255,${flash})`;
+        ctx.fillStyle = `rgba(247,248,248,${flash})`;
         ctx.fillRect(0, 0, W, H);
       }
 
@@ -1152,7 +1130,7 @@
         apple.px = mind.cx + rx * reach.x;
         apple.py = mind.cy + ry * reach.y + (reduced ? 0 : Math.sin(now * 1.3 + apple.seed * 40) * appleD * 0.035);
       }
-      apples.sort((a, b) => b.r - a.r);
+      apples.sort((a, b) => a.depth.tone - b.depth.tone || b.r - a.r);
 
       const D = appleD;
       let glowing = 0;
@@ -1169,10 +1147,10 @@
         const age = Math.min(1, (now - apple.born) / 0.28);
         const enter = 1 - Math.pow(1 - age, 3);
         const exit = apple.dying ? Math.max(0, 1 - (now - apple.dying) / 0.22) : 1;
-        const alpha = enter * exit;
+        const alpha = enter * exit * apple.depth.tone;
         if (alpha <= 0) continue;
         const grow = reduced ? 1 : 0.7 + 0.3 * enter;
-        const size = ((D * (1.08 - 0.14 * apple.r)) / (2 * BODY)) * grow;
+        const size = ((D * apple.depth.size) / (2 * BODY)) * grow;
         const body = size * 2 * BODY;
         const x = apple.px;
         const y = apple.py;
@@ -1195,7 +1173,10 @@
         }
 
         ctx.globalAlpha = alpha;
-        bank.draw(ctx, apple.tier, spriteS, apple.angle, x, y, size);
+        ctx.translate(x, y);
+        ctx.rotate(apple.tilt);
+        bank.draw(ctx, apple.tier, spriteS, apple.angle, 0, 0, size);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
 
         if (look.halo) {
           const hs = body * 0.95;
@@ -1231,18 +1212,17 @@
           continue;
         }
         const e = 1 - Math.pow(1 - age, 3);
-        ctx.strokeStyle = `rgba(214,206,255,${0.5 * (1 - age)})`;
+        ctx.strokeStyle = `rgba(180,183,189,${0.5 * (1 - age)})`;
         ctx.lineWidth = 2 * dpr;
         ctx.beginPath();
         ctx.arc(r.x, r.y, (10 + 40 * e) * dpr, 0, TAU);
         ctx.stroke();
       }
       ctx.restore();
-      ctx.drawImage(outlineLayer, 0, 0);
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = `700 ${Math.round(19 * dpr)}px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif`;
+      ctx.font = `600 ${Math.round(18 * dpr)}px Inter, ui-sans-serif, system-ui, sans-serif`;
       for (let k = floaters.length - 1; k >= 0; k--) {
         const f = floaters[k];
         const age = (now - f.t0) / 0.9;
@@ -1255,9 +1235,9 @@
         const fx = f.x + (reduced ? 0 : f.drift * e);
         const fy = f.y - (reduced ? 0 : 56 * dpr * e) - 14 * dpr;
         ctx.globalAlpha = alpha;
-        ctx.fillStyle = 'rgba(10,8,24,0.75)';
+        ctx.fillStyle = 'rgba(8,9,10,0.8)';
         ctx.fillText(f.text, fx, fy + 2 * dpr);
-        ctx.fillStyle = frenzy ? '#ffd27a' : '#f4f1ff';
+        ctx.fillStyle = frenzy ? '#D3A256' : '#F7F8F8';
         ctx.fillText(f.text, fx, fy);
       }
       ctx.globalAlpha = 1;
@@ -1290,7 +1270,7 @@
     canvasCtx.globalCompositeOperation = 'lighter';
     canvasCtx.globalAlpha = pulse * 0.8;
     const gs = body * 1.6;
-    canvasCtx.drawImage(glowSprite('#ffcf5c'), c - gs / 2, c - gs / 2, gs, gs);
+    canvasCtx.drawImage(glowSprite('#C9A554'), c - gs / 2, c - gs / 2, gs, gs);
     canvasCtx.globalAlpha = 1;
     canvasCtx.globalCompositeOperation = 'source-over';
     bank.draw(canvasCtx, index, S, angle, c, c, body / (2 * BODY), true);
@@ -1301,7 +1281,7 @@
       const a = (j / 3) * TAU + Math.floor(cycle) * 2.1;
       const ss = body * (0.25 + 0.25 * tw);
       canvasCtx.globalAlpha = tw;
-      canvasCtx.drawImage(sparkleSprite('#fff6d0'), c + Math.cos(a) * body * 0.42 - ss / 2, c + Math.sin(a) * body * 0.42 - ss / 2, ss, ss);
+      canvasCtx.drawImage(sparkleSprite('#F4E0CC'), c + Math.cos(a) * body * 0.42 - ss / 2, c + Math.sin(a) * body * 0.42 - ss / 2, ss, ss);
     }
     canvasCtx.globalAlpha = 1;
     canvasCtx.globalCompositeOperation = 'source-over';

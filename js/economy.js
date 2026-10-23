@@ -132,6 +132,20 @@
     return state.owned[tier.id] > 0 || state.lifetimeSpins >= tier.baseCost / 2;
   }
 
+  function bestValueIndex(state) {
+    let best = -1;
+    let bestRatio = 0;
+    TIERS.forEach((tier, i) => {
+      if (!tierUnlocked(state, i)) return;
+      const ratio = spsEach(state, i) / unitCost(tier, state.owned[tier.id]);
+      if (ratio > bestRatio) {
+        best = i;
+        bestRatio = ratio;
+      }
+    });
+    return best;
+  }
+
   function upgradeAvailable(state, upgrade) {
     return !state.upgrades.includes(upgrade.id) && meetsRequirement(state, upgrade.unlock);
   }
@@ -252,6 +266,7 @@
     buyTier,
     buyUpgrade,
     tierUnlocked,
+    bestValueIndex,
     upgradeAvailable,
     iq,
     iqExact,
