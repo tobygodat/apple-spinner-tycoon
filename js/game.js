@@ -405,8 +405,8 @@
     const hadFocus = document.activeElement === button;
     patchStore(Date.now());
     if (hadFocus) {
-      const next = upgradeViews.find((view) => !view.row.hidden);
-      (next ? next.buy : els.focus).focus({ preventScroll: true });
+      const next = upgradeViews.find((view) => !view.row.hidden && view.row.classList.contains('is-ready'));
+      (next ? next.buy : els.upgradesToggle).focus({ preventScroll: true });
     }
   }
 
@@ -625,6 +625,7 @@
     }
     setHtml(view.buy1, 'b1:' + unit, 'Buy 1 <span>' + fmt(unit) + '</span>');
     setAttr(view.buy1, 'aria-disabled', String(unit > state.spins));
+    if (most < 2 && document.activeElement === view.buyN) view.buy1.focus({ preventScroll: true });
     setHidden(view.buyN, most < 2);
     if (most >= 2) {
       view.buyN.dataset.qty = String(most);
@@ -843,15 +844,16 @@
 
   const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
   document.addEventListener('keydown', (e) => {
-    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.repeat && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      return;
+    }
+    if (e.defaultPrevented || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
     if (els.stats.open || els.reset.open || TYPING.has(e.target.tagName)) return;
     if (e.key === ' ') {
-      if (e.target.closest && e.target.closest('button')) {
-        if (e.repeat) e.preventDefault();
-        return;
-      }
+      if (e.target.closest && e.target.closest('button')) return;
       e.preventDefault();
-      if (!e.repeat) focusCentered();
+      focusCentered();
     } else if (e.key === 's' || e.key === 'S') {
       setStoreOpen(els.store.hidden);
     } else if (e.key === 't' || e.key === 'T') {
@@ -872,6 +874,7 @@
     patchMind();
   }).observe(els.head);
 
+  writeSave();
   setInterval(() => writeSave(), AUTOSAVE_MS);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') writeSave();
