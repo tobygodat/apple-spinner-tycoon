@@ -22,7 +22,7 @@ Run `npx wrangler deploy` from this folder to publish the game to https://apple-
 - **Apples.** There are 13 varieties. Each one spins on its own and earns spins every second. The price of a variety rises 15% with each one you own. Buy 1, 10, 100, or as many as you can afford.
 - **Upgrades.** There are 81 upgrades. They multiply one variety, every apple, or each focus. Some add a share of your spins per second to each focus.
 - **IQ.** Your score is `round(100 + 15 × log2(1 + Σ owned × tier))`. It moves you through 14 ranks, from Aphantasic to Platonic Mind.
-- **Golden apples.** One drifts across the screen every one to three minutes. Catch it for one of two outcomes. Lucky pays `min(15% of your spins, 900 seconds of production) + 13`. Frenzy multiplies all production by 7 for 30 seconds.
+- **Golden apples.** One drifts across the screen every two to five minutes. Catch it for one of two outcomes. Lucky pays `min(15% of your spins, 900 seconds of production) + 13`. Frenzy multiplies all production by 7 for 45 seconds.
 - **Store.** Press S or the Store button to open the store panel, and Esc to close it. Click an apple to see its output, payback time, and the upgrade that boosts it. The Best value tag marks the apple with the most output per spin. Press T for stats and the reset button.
 - **Saving.** The game saves to `localStorage` every 10 seconds and when you leave the tab. When you come back, it pays for the time you were away, up to 8 hours.
 
@@ -39,7 +39,8 @@ The head pictures at most 64 apples, fewer in a small window. It always shows yo
 | `js/render.js` | The head and the apples on one Canvas 2D element. |
 | `js/game.js` | The page: input, store, toasts, saving, and the frame loop. |
 | `fonts/` | Inter, bundled so the page makes no network request (SIL Open Font License). |
-| `tests/` | Unit tests for the economy, the formatter, and sprite selection. |
+| `tests/` | Unit tests for the economy, the formatter, sprite selection, and pacing. |
+| `tools/balance-sim.js` | The pacing simulation behind the balance test. |
 
 Each apple is a small 3D render on the CPU. A procedural skin is wrapped onto an apple-shaped body and lit, once per rotation frame. Each variety gets 32 frames on a sprite sheet. The sheets bake a few milliseconds at a time between frames, so the page stays responsive while new varieties appear. Materials are keyed by `look.material` in `js/data.js`: matte, gloss, metal, chrome, holo, crystal, nebula, and platonic.
 
@@ -50,3 +51,11 @@ node --test tests/
 ```
 
 To use the debug panel, add `?debug=1` to the URL. It grants spins, grants 25 of each apple, spawns a golden apple, or simulates two hours away. It also exposes `window.__apples` for scripted checks.
+
+## Balance
+
+```sh
+node tools/balance-sim.js
+```
+
+This plays an idle strategy against the game and against models of Cookie Clicker and AdVenture Capitalist. The strategy buys whatever pays for itself soonest and clicks twice a second. It prints when each tier unlocks and when you own the first one, production over time, and the gaps between purchases. Add `--svg chart.svg` for a time-to-tier chart or `--json out.json` for the raw numbers. `tests/balance.test.js` fails if a tier drifts outside two thirds to one and a half times the Cookie Clicker time.

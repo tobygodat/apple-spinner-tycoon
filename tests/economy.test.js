@@ -82,7 +82,7 @@ test('a variety upgrade doubles only that variety', () => {
 });
 
 test('global multipliers scale every variety', () => {
-  near(E.spinsPerSecond(withOwned({ grannySmith: 4, redDelicious: 10 }, { upgrades: ['shapeRotator'] })), 5 * 1.25);
+  near(E.spinsPerSecond(withOwned({ grannySmith: 4, redDelicious: 10 }, { upgrades: ['shapeRotator'] })), 5 * 1.1);
 });
 
 test('variety upgrades stay locked until enough of that variety is owned', () => {
