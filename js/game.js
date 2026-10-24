@@ -243,16 +243,19 @@
     const row = document.createElement('div');
     row.className = 'row tier';
     row.innerHTML =
-      '<button type="button" class="row-main" aria-expanded="false">' +
+      '<button type="button" class="row-main">' +
       '<span class="tile art"></span>' +
       '<span class="row-text">' +
-      '<span class="row-line"><span class="row-name"></span><span class="row-rate"></span><span class="tag" hidden>Best value</span></span>' +
-      '<span class="row-line"><span class="bar"><span class="bar-fill"></span></span><span class="row-share"></span><span class="row-note"></span></span>' +
+      '<span class="row-line row-title"><span class="row-name"></span><span class="tag" hidden>Best value</span></span>' +
+      '<span class="row-line row-meta"><span class="bar"><span class="bar-fill"></span></span><span class="row-rate"></span><span class="row-share"></span><span class="row-note"></span></span>' +
       '</span>' +
       '<span class="row-owned"></span><span class="row-price"></span>' +
-      '</button>' +
       '<span class="slot"><span class="eta"><span class="eta-text"></span>' + RING + '</span>' +
-      '<button type="button" class="buy">Buy</button></span>' +
+      '<span class="buy" aria-hidden="true">Buy</span></span>' +
+      '</button>' +
+      '<button type="button" class="expand" aria-expanded="false"><span class="expand-icon">' +
+      '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+      '</span></button>' +
       '<div class="card">' +
       '<button type="button" class="card-head" aria-expanded="true">' +
       '<span class="card-art"></span>' +
@@ -284,7 +287,7 @@
       price: q('.row-price'),
       etaText: q('.eta-text'),
       ringArc: q('.eta path'),
-      buy: q('.buy'),
+      expand: q('.expand'),
       cardHead: q('.card-head'),
       cardArt: q('.card-art'),
       cardName: q('.card-name strong'),
@@ -306,8 +309,12 @@
     view.name.textContent = tier.name;
     view.cardName.textContent = tier.name;
     view.cardFlavor.textContent = tier.flavor;
-    view.buy.addEventListener('click', () => buyTier(index, buyAmount, view.price));
-    view.main.addEventListener('click', (e) => toggleTier(index, e.detail === 0));
+    view.expand.setAttribute('aria-label', tier.name + ' details');
+    view.main.addEventListener('click', () => buyTier(index, buyAmount));
+    view.expand.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleTier(index, e.detail === 0);
+    });
     view.cardHead.addEventListener('click', (e) => toggleTier(index, e.detail === 0));
     view.buy1.addEventListener('click', () => buyTier(index, 1, view.buy1));
     view.buyN.addEventListener('click', () => buyTier(index, Number(view.buyN.dataset.qty), view.buyN));
@@ -319,22 +326,24 @@
     row.className = 'row upgrade';
     row.hidden = true;
     row.innerHTML =
+      '<button type="button" class="row-main">' +
       '<span class="tile">' + Art.upgradeIcon(upgrade) + '</span>' +
       '<span class="row-text"><span class="row-name"></span><span class="row-line"><span class="row-effect"></span><span class="row-gain"></span></span></span>' +
       '<span class="row-price"></span>' +
       '<span class="slot"><span class="eta"><span class="eta-text"></span>' + RING + '</span>' +
-      '<button type="button" class="buy">Buy</button></span>';
+      '<span class="buy" aria-hidden="true">Buy</span></span>' +
+      '</button>';
     const q = (selector) => row.querySelector(selector);
     const tint = Art.iconColor(upgrade);
     if (tint) q('.tile').style.color = tint;
     q('.row-name').textContent = upgrade.name;
     q('.row-effect').textContent = describeEffect(upgrade.effect);
     q('.row-price').textContent = fmt(upgrade.cost);
-    const buy = q('.buy');
-    buy.setAttribute('aria-label', 'Buy ' + upgrade.name + ' for ' + fmt(upgrade.cost) + ' spins. ' + describeEffect(upgrade.effect) + '.');
-    buy.addEventListener('click', () => buyUpgrade(upgrade.id, buy));
+    const main = q('.row-main');
+    main.setAttribute('aria-label', 'Buy ' + upgrade.name + ' for ' + fmt(upgrade.cost) + ' spins. ' + describeEffect(upgrade.effect) + '.');
+    main.addEventListener('click', () => buyUpgrade(upgrade.id, main));
     els.upgrades.append(row);
-    return { upgrade, row, buy, price: q('.row-price'), gain: q('.row-gain'), etaText: q('.eta-text'), ringArc: q('.eta path') };
+    return { upgrade, row, main, price: q('.row-price'), gain: q('.row-gain'), etaText: q('.eta-text'), ringArc: q('.eta path') };
   });
 
   function nextTierUpgrade(index) {
@@ -355,12 +364,12 @@
     if (previous >= 0) {
       const view = tierViews[previous];
       setClass(view.row, 'is-open', false);
-      setAttr(view.main, 'aria-expanded', 'false');
+      setAttr(view.expand, 'aria-expanded', 'false');
     }
     if (closing) {
       if (upgradesFoldedForCard) setUpgradesOpen(true);
       upgradesFoldedForCard = false;
-      if (fromKeyboard) tierViews[index].main.focus();
+      if (fromKeyboard) tierViews[index].expand.focus();
     } else {
       const view = tierViews[index];
       if (upgradesOpen) {
@@ -368,7 +377,7 @@
         upgradesFoldedForCard = true;
       }
       setClass(view.row, 'is-open', true);
-      setAttr(view.main, 'aria-expanded', 'true');
+      setAttr(view.expand, 'aria-expanded', 'true');
       if (fromKeyboard) view.cardHead.focus();
       storeDirty = true;
       patchStore(Date.now());
@@ -376,28 +385,22 @@
     }
   }
 
-  function buyTier(index, qty, feedbackEl) {
+  function buyTier(index, amount, feedbackEl) {
     if (!E.tierUnlocked(state, index)) return;
-    const tier = E.TIERS[index];
-    const owned = state.owned[tier.id];
-    const count = qty === 'max' ? E.maxAffordable(tier, owned, state.spins) : qty;
-    const cost = E.costOf(tier, owned, count);
-    const next = E.buyTier(state, index, count);
+    const { qty, cost } = E.quoteTier(state, index, amount);
+    const next = E.buyTier(state, index, qty);
     if (next === state) {
-      flashDenied(feedbackEl);
+      if (feedbackEl) flashDenied(feedbackEl);
       return;
     }
     state = next;
-    event('Bought ' + count + ' ' + tier.name, fmt(cost) + ' spins', 2600, 'buy');
+    event('Bought ' + qty + ' ' + E.TIERS[index].name, fmt(cost) + ' spins', 2600, 'buy');
     ownedChanged(true);
   }
 
   function buyUpgrade(id, button) {
     const next = E.buyUpgrade(state, id);
-    if (next === state) {
-      flashDenied(button.closest('.row').querySelector('.row-price'));
-      return;
-    }
+    if (next === state) return;
     state = next;
     storeDirty = true;
     const upgrade = UPGRADES_BY_COST.find((u) => u.id === id);
@@ -406,7 +409,7 @@
     patchStore(Date.now());
     if (hadFocus) {
       const next = upgradeViews.find((view) => !view.row.hidden && view.row.classList.contains('is-ready'));
-      (next ? next.buy : els.upgradesToggle).focus({ preventScroll: true });
+      (next ? next.main : els.upgradesToggle).focus({ preventScroll: true });
     }
   }
 
@@ -508,8 +511,7 @@
         view.art.innerHTML = Art.apple(tier.id, look, 26);
         view.cardArt.innerHTML = Art.apple(tier.id, look, 52);
         setClass(view.row, 'is-locked', !unlocked);
-        setAttr(view.main, 'aria-disabled', String(!unlocked));
-        setHidden(view.buy, !unlocked);
+        setHidden(view.expand, !unlocked);
       }
       setClass(view.row, 'is-best', i === best);
       setHidden(view.tag, i !== best);
@@ -529,15 +531,16 @@
         setClass(view.row, 'is-affordable', false);
         setClass(view.row, 'is-ready', false);
         setText(view.etaText, '');
+        setAttr(view.main, 'aria-disabled', 'true');
         setAttr(view.main, 'aria-label', tier.name + '. Unlocks at ' + fmt(unlockAt) + ' lifetime spins.');
         return;
       }
 
       const each = E.spsEach(state, i);
-      const qty = buyAmount === 'max' ? Math.max(1, E.maxAffordable(tier, owned, state.spins)) : buyAmount;
-      const cost = E.costOf(tier, owned, qty);
+      const { qty, cost } = E.quoteTier(state, i, buyAmount);
       const affordable = cost <= state.spins;
-      setText(view.rate, '+' + rateText(each * multiplier) + '/s');
+      const rate = '+' + rateText(each * multiplier) + '/s';
+      setText(view.rate, rate);
       setText(view.owned, fmt(owned));
       setText(view.price, fmt(cost));
       setHidden(view.bar, owned === 0);
@@ -552,10 +555,9 @@
       setHidden(view.note, owned > 0);
       setClass(view.row, 'is-affordable', affordable);
       setClass(view.row, 'is-ready', affordable && i === best);
-      setAttr(view.buy, 'aria-disabled', String(!affordable));
-      setAttr(view.buy, 'aria-label', 'Buy ' + qty + ' ' + tier.name + ' for ' + fmt(cost) + ' spins');
+      setAttr(view.main, 'aria-disabled', String(!affordable));
+      setAttr(view.main, 'aria-label', 'Buy ' + qty + ' ' + tier.name + ' for ' + fmt(cost) + ' spins. ' + fmt(owned) + ' owned, ' + rate + ' each.' + (i === best ? ' Best value.' : ''));
       if (!affordable) patchEta(view, cost, effectiveSps);
-      setAttr(view.main, 'aria-label', tier.name + ', ' + fmt(owned) + ' owned, ' + fmt(cost) + ' spins.' + (i === best ? ' Best value.' : '') + ' Show details.');
 
       if (openTier === i) patchCard(view, i, tier, owned, each, multiplier, shares[i]);
     });
@@ -581,7 +583,7 @@
       if (!visible) continue;
       setClass(view.row, 'is-affordable', affordable);
       setClass(view.row, 'is-ready', affordable);
-      setAttr(view.buy, 'aria-disabled', String(!affordable));
+      setAttr(view.main, 'aria-disabled', String(!affordable));
       const gain = upgradeGain(view.upgrade);
       setText(view.gain, gain > 0 ? '+' + rateText(gain * multiplier) + '/s' : '');
       if (!affordable) patchEta(view, view.upgrade.cost, effectiveSps);

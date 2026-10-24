@@ -601,11 +601,15 @@ kbd,
 }
 
 .col-price {
-  width: 72px;
+  width: 68px;
 }
 
 .col-slot {
-  width: 60px;
+  width: 56px;
+}
+
+.col-expand {
+  width: 8px;
 }
 
 .section-head-cols {
@@ -635,9 +639,7 @@ kbd,
 
 .row {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 16px 0 20px;
+  align-items: stretch;
   border-bottom: 1px solid var(--line-soft);
 }
 
@@ -647,16 +649,65 @@ kbd,
   align-items: center;
   gap: 12px;
   min-width: 0;
-  height: 100%;
+  padding: 6px 16px 6px 20px;
   text-align: left;
+  transition: transform 140ms var(--ease-out), background-color 140ms ease;
+}
+
+.row-main:focus-visible {
+  outline-offset: -2px;
+}
+
+.row-main[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
+.row:not(.is-locked) > .row-main:not([aria-disabled='true']):active {
+  background: var(--raised);
+  transform: scale(0.985);
+}
+
+.tier .row-main {
+  padding-right: 0;
+}
+
+.expand {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  padding: 0 12px 0 0;
+  color: var(--text-4);
+}
+
+.expand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.expand:focus-visible {
+  outline: 0;
+}
+
+.expand:focus-visible .expand-icon {
+  outline: 2px solid var(--text-2);
+}
+
+.expand:active .expand-icon {
+  background: var(--raised);
+  color: var(--text-1);
 }
 
 .upgrade {
-  height: 52px;
+  min-height: 52px;
 }
 
 .tier {
-  height: 48px;
+  min-height: 48px;
 }
 
 .tier.is-best {
@@ -702,6 +753,21 @@ kbd,
   gap: 6px;
 }
 
+.row-title {
+  flex-wrap: wrap;
+  row-gap: 3px;
+}
+
+.row-meta {
+  flex-wrap: wrap;
+  height: 16px;
+  overflow: hidden;
+}
+
+.row-note {
+  flex: 1 1 0;
+}
+
 .row-name {
   flex-shrink: 0;
   max-width: 100%;
@@ -722,12 +788,12 @@ kbd,
 }
 
 .row-effect,
-.row-share {
+.row-rate {
   color: var(--text-3);
 }
 
 .row-gain,
-.row-rate,
+.row-share,
 .row-note {
   min-width: 0;
   overflow: hidden;
@@ -737,9 +803,17 @@ kbd,
 }
 
 .row-effect,
-.row-share,
+.row-rate,
 .tag {
   flex-shrink: 0;
+}
+
+.row-rate {
+  font-variant-numeric: tabular-nums;
+}
+
+.row-rate:empty {
+  display: none;
 }
 
 .tag {
@@ -776,6 +850,7 @@ kbd,
   display: flex;
   flex-shrink: 0;
   justify-content: flex-end;
+  white-space: nowrap;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
@@ -790,7 +865,7 @@ kbd,
 }
 
 .tier .row-price {
-  width: 72px;
+  width: 68px;
 }
 
 .is-affordable .row-price {
@@ -802,7 +877,7 @@ kbd,
   flex-shrink: 0;
   align-items: center;
   justify-content: flex-end;
-  width: 60px;
+  width: 56px;
 }
 
 .eta {
@@ -826,14 +901,8 @@ kbd,
   font-weight: 500;
 }
 
-.buy[aria-disabled='true'] {
-  border-color: var(--line);
-  background: var(--raised);
-  color: var(--text-4);
-  cursor: default;
-}
-
-.is-ready .buy {
+.is-ready .buy,
+.is-affordable .row-main:focus-visible .buy {
   display: flex;
 }
 
@@ -848,14 +917,6 @@ kbd,
   display: none;
 }
 
-.row:focus-within .buy {
-  display: flex;
-}
-
-.row:focus-within .eta {
-  display: none;
-}
-
 .row:focus-within {
   background: var(--row-hover);
 }
@@ -865,17 +926,18 @@ kbd,
     background: var(--row-hover);
   }
 
-  .row:hover .buy {
+  .is-affordable .row-main:hover .buy {
     display: flex;
-  }
-
-  .row:hover .eta {
-    display: none;
-  }
-
-  .buy:not([aria-disabled='true']):hover {
     border-color: #3a3b40;
     background: #2a2b30;
+  }
+
+  .expand:hover {
+    color: var(--text-2);
+  }
+
+  .expand:hover .expand-icon {
+    background: var(--track);
   }
 
   .bar-button:hover {
@@ -905,7 +967,7 @@ kbd,
 }
 
 .tier.is-open > .row-main,
-.tier.is-open > .slot {
+.tier.is-open > .expand {
   display: none;
 }
 
@@ -1320,9 +1382,17 @@ kbd,
     padding: 0 12px 0 16px;
   }
 
-  .row,
   .section-head {
     padding: 0 12px 0 16px;
+  }
+
+  .row-main {
+    padding-right: 12px;
+    padding-left: 16px;
+  }
+
+  .expand {
+    padding-right: 8px;
   }
 
   .summary-rate {
@@ -1330,7 +1400,43 @@ kbd,
   }
 }
 
+/* Phone widths: the rate keeps its room; the time-to-afford text and the Buy hint step aside. */
+
+@media (max-width: 459px) {
+  .row-main,
+  .section-head-cols {
+    gap: 8px;
+  }
+
+  .tier .row-price,
+  .col-price {
+    width: 66px;
+  }
+
+  .slot,
+  .col-slot {
+    width: 16px;
+  }
+
+  .col-expand {
+    width: 12px;
+  }
+
+  .eta-text,
+  .row .row-main .slot .buy {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .row-main {
+    transition-duration: 0ms;
+  }
+
+  .row:not(.is-locked) > .row-main:not([aria-disabled='true']):active {
+    transform: none;
+  }
+
   .event,
   .bar-button,
   .focus {
