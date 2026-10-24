@@ -8,6 +8,7 @@
 //   node tools/balance-sim.js                 table for all three games
 //   node tools/balance-sim.js --json out.json  also write every metric as JSON
 //   node tools/balance-sim.js --svg out.svg    also write the time-to-tier chart
+//   node tools/balance-sim.js --baseline ../main  also run the economy of another checkout and compare
 //   options: --hours 720  --clicks 2  --seed 1  --runs 5 (golden events are random, so runs are averaged)
 
 const fs = require('fs');
@@ -15,7 +16,7 @@ const path = require('path');
 const E = require(path.join(__dirname, '..', 'js', 'economy.js'));
 
 function parseArgs(argv) {
-  const args = { hours: 720, clicks: 2, seed: 1, runs: 5, json: null, svg: null };
+  const args = { hours: 720, clicks: 2, seed: 1, runs: 5, json: null, svg: null, baseline: null };
   for (let i = 0; i < argv.length; i += 2) {
     const key = argv[i].replace(/^--/, '');
     if (!(key in args)) throw new Error('Unknown option ' + argv[i]);
@@ -137,40 +138,40 @@ function simulate(model, { hours, clicks, seed }) {
   };
 }
 
-function appleSpinner() {
+function appleSpinner(economy = E, name = 'Apple Spinner') {
   const NONE = { mult: 1, clickMult: 1 };
   return {
-    name: 'Apple Spinner',
-    tiers: E.TIERS,
-    init: () => E.freshState(0),
+    name,
+    tiers: economy.TIERS,
+    init: () => economy.freshState(0),
     bank: (s) => s.spins,
-    owned: (s, i) => s.owned[E.TIERS[i].id],
-    tierUnlocked: (s, i) => E.tierUnlocked(s, i),
-    rates: (s, b = NONE) => ({ sps: E.spinsPerSecond(s) * b.mult, perClick: E.spinsPerClick(s, b.mult) }),
-    earn: (s, fromSps, fromClicks, clicks) => ({ ...E.earn(s, fromSps + fromClicks), clicks: s.clicks + clicks }),
+    owned: (s, i) => s.owned[economy.TIERS[i].id],
+    tierUnlocked: (s, i) => economy.tierUnlocked(s, i),
+    rates: (s, b = NONE) => ({ sps: economy.spinsPerSecond(s) * b.mult, perClick: economy.spinsPerClick(s, b.mult) }),
+    earn: (s, fromSps, fromClicks, clicks) => ({ ...economy.earn(s, fromSps + fromClicks), clicks: s.clicks + clicks }),
     spend: (s) => s,
     candidates(s) {
       const rich = { ...s, spins: Infinity };
       const out = [];
-      E.TIERS.forEach((tier, i) => {
-        if (!E.tierUnlocked(s, i)) return;
-        const cost = E.costOf(tier, s.owned[tier.id], 1);
-        out.push({ label: tier.name, cost, apply: (x) => ({ ...E.buyTier({ ...x, spins: Infinity }, i, 1), spins: x.spins - cost }) });
+      economy.TIERS.forEach((tier, i) => {
+        if (!economy.tierUnlocked(s, i)) return;
+        const cost = economy.costOf(tier, s.owned[tier.id], 1);
+        out.push({ label: tier.name, cost, apply: (x) => ({ ...economy.buyTier({ ...x, spins: Infinity }, i, 1), spins: x.spins - cost }) });
       });
-      for (const u of E.UPGRADES) {
-        if (!E.upgradeAvailable(rich, u)) continue;
-        out.push({ label: u.name, cost: u.cost, apply: (x) => ({ ...E.buyUpgrade({ ...x, spins: Infinity }, u.id), spins: x.spins - u.cost }) });
+      for (const u of economy.UPGRADES) {
+        if (!economy.upgradeAvailable(rich, u)) continue;
+        out.push({ label: u.name, cost: u.cost, apply: (x) => ({ ...economy.buyUpgrade({ ...x, spins: Infinity }, u.id), spins: x.spins - u.cost }) });
       }
       return out;
     },
     golden: {
-      delay: (s, random) => (E.GOLDEN.minDelayMs + random() * (E.GOLDEN.maxDelayMs - E.GOLDEN.minDelayMs)) / 1000,
+      delay: (s, random) => (economy.GOLDEN.minDelayMs + random() * (economy.GOLDEN.maxDelayMs - economy.GOLDEN.minDelayMs)) / 1000,
       effect(s, random, t) {
         const caught = { ...s, goldenClicks: s.goldenClicks + 1 };
-        if (random() < 0.5) return { state: E.earn(caught, E.luckyAmount(caught)) };
+        if (random() < 0.5) return { state: economy.earn(caught, economy.luckyAmount(caught)) };
         return {
           state: caught,
-          buff: { mult: E.GOLDEN.frenzyMultiplier, clickMult: 1, endsAt: t + E.GOLDEN.frenzyMs / 1000 },
+          buff: { mult: economy.GOLDEN.frenzyMultiplier, clickMult: 1, endsAt: t + economy.GOLDEN.frenzyMs / 1000 },
         };
       },
     },
@@ -525,14 +526,25 @@ function svg(results) {
 if (require.main === module) {
   const args = parseArgs(process.argv.slice(2));
   const seeds = Array.from({ length: args.runs }, (_, k) => args.seed + k);
-  const results = [appleSpinner, cookieClicker, adventureCapitalist].map((model) =>
-    average(seeds.map((seed) => simulate(model(), { ...args, seed }))),
-  );
+  const models = [appleSpinner, cookieClicker, adventureCapitalist];
+  if (args.baseline) {
+    const baseline = require(path.resolve(args.baseline, 'js', 'economy.js'));
+    models.splice(1, 0, () => appleSpinner(baseline, 'Apple Spinner (baseline)'));
+  }
+  const results = models.map((model) => average(seeds.map((seed) => simulate(model(), { ...args, seed }))));
+  if (args.baseline) results[1].dash = true;
   console.log(
     '# Idle strategy: shortest payback (wait + cost / gain), ' + args.clicks + ' clicks/s, golden events caught.',
     'Mean of ' + args.runs + ' runs (seeds ' + seeds[0] + '–' + seeds[seeds.length - 1] + '); longest gaps are the worst run.',
   );
   console.log(table(results));
+  if (args.baseline) {
+    console.log('\n## Apple Spinner against the baseline (first owned, ratio)\n');
+    results[0].tiers.forEach((tier, i) => {
+      const before = results[1].tiers[i].ownedAt;
+      console.log(String(i + 1).padEnd(4) + tier.name.padEnd(24) + duration(before).padEnd(10) + duration(tier.ownedAt).padEnd(10) + (tier.ownedAt / before).toFixed(2) + '×');
+    });
+  }
   if (args.json) fs.writeFileSync(args.json, JSON.stringify(results, null, 2));
   if (args.svg) fs.writeFileSync(args.svg, svg(results));
 }

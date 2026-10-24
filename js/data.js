@@ -5,8 +5,8 @@
     {
       id: 'redDelicious',
       name: 'Red Delicious',
-      baseCost: 15,
-      baseSps: 0.1,
+      baseCost: 12,
+      baseSps: 0.12,
       flavor: 'The control apple. Neither red nor, in clinical trials, delicious.',
       look: {
         material: 'matte',
@@ -21,8 +21,8 @@
     {
       id: 'grannySmith',
       name: 'Granny Smith',
-      baseCost: 100,
-      baseSps: 1,
+      baseCost: 80,
+      baseSps: 1.3,
       flavor: 'Tart, green, and easier to rotate than expected.',
       look: {
         material: 'matte',
@@ -37,8 +37,8 @@
     {
       id: 'gala',
       name: 'Gala',
-      baseCost: 1100,
-      baseSps: 8,
+      baseCost: 680,
+      baseSps: 6.5,
       flavor: 'Streaked like it spun too fast once and never fully recovered.',
       look: {
         material: 'matte',
@@ -53,8 +53,8 @@
     {
       id: 'fuji',
       name: 'Fuji',
-      baseCost: 12000,
-      baseSps: 47,
+      baseCost: 17000,
+      baseSps: 55,
       flavor: 'Sourced from the part of your brain that took one semester of Japanese.',
       look: {
         material: 'matte',
@@ -69,8 +69,8 @@
     {
       id: 'honeycrisp',
       name: 'Honeycrisp',
-      baseCost: 130000,
-      baseSps: 260,
+      baseCost: 210000,
+      baseSps: 310,
       flavor: 'Makes a crunch only you can hear.',
       look: {
         material: 'gloss',
@@ -85,8 +85,8 @@
     {
       id: 'pinkLady',
       name: 'Pink Lady',
-      baseCost: 1.4e6,
-      baseSps: 1400,
+      baseCost: 2.9e6,
+      baseSps: 2400,
       flavor: 'Spins clockwise to be polite.',
       look: {
         material: 'gloss',
@@ -102,8 +102,8 @@
     {
       id: 'cosmicCrisp',
       name: 'Cosmic Crisp',
-      baseCost: 2e7,
-      baseSps: 7800,
+      baseCost: 2.4e7,
+      baseSps: 9100,
       flavor: 'Bred to resemble the night sky. The night sky was not consulted.',
       look: {
         material: 'gloss',
@@ -118,8 +118,8 @@
     {
       id: 'gilded',
       name: '24-Karat Apple',
-      baseCost: 3.3e8,
-      baseSps: 44000,
+      baseCost: 4e8,
+      baseSps: 56000,
       flavor: 'Inedible. Spins like it owns a boat.',
       look: {
         material: 'metal',
@@ -134,8 +134,8 @@
     {
       id: 'chrome',
       name: 'Chrome Apple',
-      baseCost: 5.1e9,
-      baseSps: 260000,
+      baseCost: 4.2e9,
+      baseSps: 210000,
       flavor: 'A perfect mirror. It reflects the inside of your skull. Try not to look.',
       look: {
         material: 'chrome',
@@ -150,8 +150,8 @@
     {
       id: 'holographic',
       name: 'Holographic Apple',
-      baseCost: 7.5e10,
-      baseSps: 1.6e6,
+      baseCost: 4.8e10,
+      baseSps: 1.3e6,
       flavor: 'Changes color depending on how smart you are. It is always this color.',
       look: {
         material: 'holo',
@@ -165,8 +165,8 @@
     {
       id: 'crystal',
       name: 'Crystal Apple',
-      baseCost: 1e12,
-      baseSps: 1e7,
+      baseCost: 8.6e11,
+      baseSps: 6.5e6,
       flavor: 'Cut by a jeweler, polished by a mathematician, imagined by you.',
       look: {
         material: 'crystal',
@@ -181,8 +181,8 @@
     {
       id: 'nebula',
       name: 'Nebula Apple',
-      baseCost: 1.4e13,
-      baseSps: 6.5e7,
+      baseCost: 9e12,
+      baseSps: 3.6e7,
       flavor: 'Contains a galaxy. The galaxy contains, statistically, someone imagining an apple.',
       look: {
         material: 'nebula',
@@ -198,8 +198,8 @@
     {
       id: 'platonic',
       name: 'The Platonic Apple',
-      baseCost: 1.7e14,
-      baseSps: 4.3e8,
+      baseCost: 8.8e13,
+      baseSps: 1.9e8,
       flavor: 'Every other apple is a shadow on a cave wall. This is the apple casting them.',
       look: {
         material: 'platonic',
@@ -236,13 +236,13 @@
     },
     {
       count: 50,
-      costFactor: 5000,
+      costFactor: 20000,
       name: 'Frictionless Orchard',
       flavor: 'Your {name} trees now grow in a vacuum. Pollination is a problem for later.',
     },
     {
       count: 100,
-      costFactor: 50000,
+      costFactor: 1e7,
       name: 'Perpetual Motion Seeds',
       flavor: 'Thermodynamics has agreed to look away while your {name} spin.',
     },

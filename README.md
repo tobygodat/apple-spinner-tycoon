@@ -19,7 +19,7 @@ Run `npx wrangler deploy` from this folder to publish the game to https://apple-
 ## How it plays
 
 - **Focus.** Each press of the Focus button, each click on the head, and each Space earns spins. Holding a key down counts once.
-- **Apples.** There are 13 varieties. Each one spins on its own and earns spins every second. The price of a variety rises 15% with each one you own. Buy 1, 10, 100, or as many as you can afford.
+- **Apples.** There are 13 varieties. Each one spins on its own and earns spins every second. The price of a variety rises 14% with each one you own. Buy 1, 10, 100, or as many as you can afford.
 - **Upgrades.** There are 81 upgrades. They multiply one variety, every apple, or each focus. Some add a share of your spins per second to each focus.
 - **IQ.** Your score is `round(100 + 15 × log2(1 + Σ owned × tier))`. It moves you through 14 ranks, from Aphantasic to Platonic Mind.
 - **Golden apples.** One drifts across the screen every two to five minutes. Catch it for one of two outcomes. Lucky pays `min(15% of your spins, 900 seconds of production) + 13`. Frenzy multiplies all production by 7 for 45 seconds.
@@ -58,4 +58,11 @@ To use the debug panel, add `?debug=1` to the URL. It grants spins, grants 25 of
 node tools/balance-sim.js
 ```
 
-This plays an idle strategy against the game and against models of Cookie Clicker and AdVenture Capitalist. The strategy buys whatever pays for itself soonest and clicks twice a second. It prints when each tier unlocks and when you own the first one, production over time, and the gaps between purchases. Add `--svg chart.svg` for a time-to-tier chart or `--json out.json` for the raw numbers. `tests/balance.test.js` fails if a tier drifts outside two thirds to one and a half times the Cookie Clicker time.
+This plays an idle strategy against the game and against models of Cookie Clicker and AdVenture Capitalist. The strategy buys whatever pays for itself soonest and clicks twice a second. It prints when each tier unlocks and when you own the first one, production over time, and the gaps between purchases. Add `--svg chart.svg` for a time-to-tier chart or `--json out.json` for the raw numbers. To compare a balance change against another version of the game, check that version out and pass its folder:
+
+```sh
+git worktree add ../apple-main origin/main
+node tools/balance-sim.js --baseline ../apple-main --svg chart.svg
+```
+
+The baseline runs as a dashed line on the chart, and a last table gives each tier's time against the baseline. `tests/balance.test.js` fails if a tier drifts outside two thirds to one and a half times the Cookie Clicker time. It also fails if a tier's base cost or output comes within 15% of the matching Cookie Clicker building, or if three tiers in a row are a near-constant multiple of Cookie Clicker's.

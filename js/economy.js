@@ -2,7 +2,7 @@
   'use strict';
 
   const SAVE_VERSION = 1;
-  const COST_GROWTH = 1.15;
+  const COST_GROWTH = 1.14;
   const OFFLINE_CAP_SECONDS = 8 * 60 * 60;
   const GOLDEN = {
     minDelayMs: 120000,
@@ -256,6 +256,7 @@
   }
 
   const Economy = {
+    COST_GROWTH,
     OFFLINE_CAP_SECONDS,
     GOLDEN,
     TIERS,
